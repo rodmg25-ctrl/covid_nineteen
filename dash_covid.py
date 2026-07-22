@@ -149,10 +149,14 @@ if 'df' in st.session_state:
         if 'people_vaccinated_per_hundred' in df.columns:
             df_vacinados = df.dropna(subset=['people_vaccinated_per_hundred']).sort_values('date').groupby('location').tail(1)
             df_vacinados = df_vacinados.sort_values('people_vaccinated_per_hundred', ascending=False)
+            df_vacinados['faixa'] = df_vacinados['people_vaccinated_per_hundred'].apply(
+                lambda x: 'Abaixo de 70%' if x < 70 else '70% ou mais'
+            )
 
-            fig5 = px.bar(df_vacinados, x='location', y='people_vaccinated_per_hundred',
+            fig5 = px.bar(df_vacinados, x='location', y='people_vaccinated_per_hundred', color='faixa',
+                         color_discrete_map={'menor que 70%': '#d62728', '70% ou mais': '#2ca02c'},
                          title='Proporção de Vacinados por País (%)',
-                         labels={'location': 'País', 'people_vaccinated_per_hundred': '% Vacinados'})
+                         labels={'location': 'País', 'people_vaccinated_per_hundred': '% Vacinados', 'faixa': 'Faixa'})
             st.plotly_chart(fig5, use_container_width=True)
         else:
             st.warning("Colunas de data de entrega não encontradas")
@@ -185,7 +189,7 @@ if 'df' in st.session_state:
             )
 
     with tab6:
-        st.subheader("Query SQL Personalizada")
+        st.subheader("Query SQL")
 
         query = st.text_area(
             "Digite sua consulta SQL",
